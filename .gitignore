@@ -1,0 +1,7 @@
+*.pyc
+.venv/
+venv/
+migrations/
+config.ini
+__pycache__/
+.idea/
