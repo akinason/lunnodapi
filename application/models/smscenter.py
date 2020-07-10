@@ -4,13 +4,13 @@ from sqlalchemy import or_
 
 from application import db 
 from application.utils.auth import generate_random_numbers 
+from application.smsprovider.lib.base import SMSStatus as BaseSMSStatus
 
-class SMSStatus:
+
+class SMSStatus(BaseSMSStatus):
     def __init__(self):
-        self.submitted = 'SUBMITTED'
-        self.sent = 'SENT'
-        self.delivered = 'DELIVERED'
-        self.failed = 'FAILED'
+       super().__init__()
+       pass 
 
 
 sms_status = SMSStatus()
@@ -29,6 +29,7 @@ class SMSAccount(db.Model):
     balance = db.Column(db.Integer(), default=0)
     total_sent = db.Column(db.Integer(), default=0)
     historic_total = db.Column(db.Integer(), default=0)
+    callback_url = db.Column(db.String(250), nullable=True)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow())
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow())
 
@@ -81,12 +82,19 @@ class ShortMessage(db.Model):
     user = db.relationship('User', backref='messages', lazy=True)
     mno = db.Column(db.String(30))
     sid = db.Column(db.String(11))
-    mt = db.Column(db.Integer())
+    mt = db.Column(db.Integer(), default=0)
+    fl = db.Column(db.Integer(), default=0)
     msg = db.Column(db.String(1000))
     quantity = db.Column(db.Integer(), default=1)
     status = db.Column(db.String(30), default=sms_status.submitted)
     response = db.Column(db.String(1000), nullable=True)
+    response_time = db.Column(db.Numeric(10, 3), default=0)
+    attempts = db.Column(db.Integer(), default=0)
+    external_id = db.Column(db.String(150), nullable=True)
     provider_id = db.Column(db.Integer(), nullable=True)
+    callback_url = db.Column(db.String(250), nullable=True)
+    callback_is_sent = db.Column(db.Boolean(), default=False)
+    is_complete = db.Column(db.Boolean(), default=False)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow())
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow())
 
@@ -123,6 +131,16 @@ class ShortMessage(db.Model):
     def get_messages_using_batch_id_and_user_id(batch_id, user_id):
         msgs = ShortMessage.query.filter_by(batch_id=batch_id, user_id=user_id).all()
         return msgs if msgs else None 
+
+    @staticmethod
+    def get_messages_by_status(status):
+        msgs = ShortMessage.query.filter_by(status=status).all()
+        return msgs if msgs else None 
+    
+    @staticmethod
+    def get_message_using_external_id(external_id):
+        msg = ShortMessage.query.filter_by(external_id=external_id).first()
+        return msg if msg else None 
 
 class SMSTransaction(db.Model):
     __tablename__ = 'sms_transactions'

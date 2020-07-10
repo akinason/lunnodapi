@@ -6,6 +6,7 @@ from application.models.smscenter import SMSAccount
 from application.account.lib.gloxon import gloxonAuth
 from application.utils.auth import generate_token
 
+
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({}), 200

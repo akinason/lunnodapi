@@ -3,6 +3,7 @@ from flask import Flask
 from flask_apscheduler import APScheduler
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
+from flask_executor import Executor 
 
 from application.utils.gearman import JSONGearmanClient, JSONGearmanWorker
 
@@ -21,8 +22,10 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 scheduler = APScheduler(app=app)
 scheduler.start()
+executor = Executor(app)
 
 
 from application.account.routes import *
 from application.smscenter.jobs import * 
 from application.smscenter.routes import *
+from application.smsprovider.routes import *

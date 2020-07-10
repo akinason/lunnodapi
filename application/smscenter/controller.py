@@ -2,7 +2,7 @@ from flask import jsonify
 
 from application import db 
 from application.models.smscenter import SMSAccount, ShortMessage
-from application.models.schema.smscenter import SMSAccountSchema, ShortMessageSchema
+from application.models.schema.smscenter import SMSAccountSchema, ShortMessageSchema, SMSAccountInfoSchema
 from application.smscenter.manager import sms_manager 
 
 
@@ -50,9 +50,31 @@ class SMSController:
 
         return jsonify({"success": True, "data": SMSAccountSchema().dump(account)}), 200
 
-    def create_sms_account(self, name, user):
-        account = SMSAccount(name=name, is_default=False, owner_id=user.id, is_floataccount=False)
+
+    def get_account_info(self, public_id):
+        account = SMSAccount.get_account_using_public_id(public_id)
+        if account is None:
+            return jsonify({"success": False, "message": "Account Not Found"}), 404
+
+        return jsonify({"success": True, "data": SMSAccountInfoSchema().dump(account)}), 200
+
+    def create_sms_account(self, name, user, callback_url=None):
+        account = SMSAccount(name=name, is_default=False, owner_id=user.id, is_floataccount=False, callback_url=callback_url)
         account.set_public_id()
+        db.session.add(account)
+        db.session.commit()
+        return jsonify({"success": True, "data": SMSAccountSchema().dump(account)}), 200
+
+    def update_sms_account(self, public_id, user, name=None, callback_url=None):
+        account = SMSAccount.get_account_using_public_id(public_id)
+        if account is None or account.owner_id != user.id:
+            return jsonify({"success": False, "message": "Account Not Found"}), 404
+        
+        if name:
+            account.name = name 
+        if callback_url:
+            account.callback_url = callback_url
+        
         db.session.add(account)
         db.session.commit()
         return jsonify({"success": True, "data": SMSAccountSchema().dump(account)}), 200

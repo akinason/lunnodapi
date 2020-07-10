@@ -13,14 +13,20 @@ class Manager:
     def __init__(self):
         pass 
 
-    def reload(self, public_id, quantity: int) -> dict:
+    def reload(self, public_id, quantity: int, reverse_transaction=False) -> dict:
         """
         Reloads an SMS account with corresponding number of SMS.
         """
         account = SMSAccount.get_account_using_public_id(public_id)
         if account:
             account.balance = SMSAccount.balance + quantity
-            account.historic_total = SMSAccount.historic_total + quantity
+
+            if not reverse_transaction:
+                account.historic_total = SMSAccount.historic_total + quantity
+            
+            if reverse_transaction:
+                account.total_sent -= quantity 
+            
             db.session.add(account)
             db.session.commit()
             return {"success": True, "balance": account.balance, "account_id": account.id} 
@@ -55,7 +61,7 @@ class Manager:
 
         reloaded = self.reload(dest, quantity)
         if not reloaded['success']:
-            self.reload(source, quantity)  # Reload the source account. Hopefully this always works.
+            self.reload(source, quantity, reverse_transaction=True)  # Reload the source account. Hopefully this always works.
             return {"success": False, "message": f"Destination account: {reloaded['message']}"}
       
         # Update transaction table.

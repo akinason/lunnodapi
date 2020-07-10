@@ -58,6 +58,11 @@ class Base:
     GLOXON_APP_KEY = config.get('OAUTH', 'GLOXON_APP_KEY')
     GLOXON_APP_SECRET = config.get('OAUTH', 'GLOXON_APP_SECRET')
     
+    # Threading
+    EXECUTOR_MAX_WORKERS = int(config.get('BASE', 'EXECUTOR_MAX_WORKERS'))
+    SIMULATE_SMS_SENDING = config.getboolean('BASE', 'SIMULATE_SMS_SENDING')
+
+
 class Development(Base):
     DEBUG = True  
 

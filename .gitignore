@@ -5,3 +5,4 @@ migrations/
 config.ini
 __pycache__/
 .idea/
+settings.json
