@@ -54,6 +54,7 @@ class Manager:
         Transfer's SMS from one account to another.
         :param source: public_id of the account to remove sms from.
         :param dest: public_id of the account to add sms to.
+        :param user_id: The destination account user_id, if the destination is not our system, else the source account user_id.
         """
         removed = self.remove(source, quantity)
         if not removed['success']:
@@ -74,6 +75,16 @@ class Manager:
         db.session.add(txn)
         db.session.commit()
         return {"success": True}
+
+    def sell_sms(self, dest, quantity, user_id, description=None):
+        """
+        Deducts the required quantity of SMS from the SMS_SALES_ACCOUNT Into the destination account. 
+        :param dest: The public id of the destination account.
+        :param quantity: The number of SMS to reload the account with. 
+        """
+        source = config.SALES_SMS_ACCOUNT
+        res = self.transfer(source=source, dest=dest, quantity=quantity, user_id=user_id, description="SMS Sales")
+        return res  
 
     def _format_mno(self, mno):
         mno_list = str(mno).replace(" ", "").replace("+", "").split(',')

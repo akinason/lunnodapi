@@ -4,14 +4,14 @@ import threading
 import time 
 import random 
 
-from application.smsprovider.lib.base import SMSStatus, AuthRequiredException
+from application.smsprovider.lib.base import SMSStatus, AuthRequiredException, BaseProvider
 
 
 URL = 'http://gloxonsms.com:9800'
 sms_status = SMSStatus()
 
 
-class GloxonSMS:
+class GloxonSMS(BaseProvider):
 
     def __init__(self, username=None, password=None, session=None):
         self.base_url = URL

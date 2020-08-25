@@ -6,3 +6,6 @@ config.ini
 __pycache__/
 .idea/
 settings.json
+test.py 
+tester.py 
+Untitled.*

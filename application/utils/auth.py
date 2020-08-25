@@ -1,6 +1,6 @@
 import random
 
-from functools import wraps
+from functools import wraps, partial
 
 from flask import request, g, jsonify
 from itsdangerous import SignatureExpired, BadSignature
@@ -30,18 +30,36 @@ def verify_token(token):
     return data
 
 
-def requires_auth(f):
+def requires_auth(f=None, *, auth_is_optional=False):
+    if f is None:
+        return partial(requires_auth, auth_is_optional=auth_is_optional)
+
+    if auth_is_optional:
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            return f(*args, **kwargs)
+    else:
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get('Authorization', None)
+            if token:
+                string_token = token.split(" ")[1]
+                user = verify_token(string_token)
+                if user:
+                    g.user = user
+                    return f(*args, **kwargs)
+
+            return jsonify(message="Authentication is required to access this resource"), 401
+
+    return decorated
+
+
+def requires_app_auth(f):
+    # Authentication used by Lunnod front end applications.
+    # TODO: still to work on the authentication.
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization', None)
-        if token:
-            string_token = token.split(" ")[1]
-            user = verify_token(string_token)
-            if user:
-                g.user = user
-                return f(*args, **kwargs)
-
-        return jsonify(message="Authentication is required to access this resource"), 401
+        return f(*args, **kwargs)
 
     return decorated
 

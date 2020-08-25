@@ -1,7 +1,7 @@
 import json
 import urllib3
 
-import config as conf
+from config import config 
 
 http = urllib3.PoolManager()
 
@@ -50,6 +50,7 @@ class GloxonAuth:
 
     def getUserInformation(self, token, publicId):
         endpoint = f"/api/v1/user/{publicId}"
+        print(endpoint)
         url = f"{self.baseURL}{endpoint}"
         response = self._get(url, token)
         return response
@@ -62,5 +63,5 @@ class GloxonAuth:
         return response
 
 
-gloxonAuth = GloxonAuth(appKey=conf.Configurations.GLOXON_APP_KEY, appSecret=conf.Configurations.GLOXON_APP_SECRET)
+gloxonAuth = GloxonAuth(appKey=config.GLOXON_APP_KEY, appSecret=config.GLOXON_APP_SECRET)
 

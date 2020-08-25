@@ -13,6 +13,8 @@ class User(db.Model):
     is_affiliate = db.Column(db.Boolean(), default=False)
     affiliate_docs = db.Column(db.String(255), nullable=True)
     is_admin = db.Column(db.Boolean(), default=False)
+    referrer_id = db.Column(db.Integer(), db.ForeignKey('users.id'), index=True)
+    referrer = db.relationship(lambda: User, remote_side=id, backref="referrals")
     created_on = db.Column(db.DateTime(), default=datetime.utcnow())
     updated_on = db.Column(db.DateTime(), onupdate=datetime.utcnow())
     gloxon_token = db.Column(db.String(1000), nullable=True)
@@ -25,6 +27,9 @@ class User(db.Model):
 
     def __str__(self):
         return self.email
+    
+    def __int__(self):
+        return int(self.public_id) 
 
     @property
     def first_name(self):
@@ -58,7 +63,8 @@ class User(db.Model):
             self._full_name = f"{self._first_name} {self._last_name}"
 
     def get_user_information(self):
-        return gloxonAuth.getUserInformation(self.gloxon_token, self.gloxon_id)
+        res = gloxonAuth.getUserInformation(self.gloxon_token, self.gloxon_id)
+        return res 
 
     @staticmethod
     def get_user_using_email(email):
@@ -67,7 +73,7 @@ class User(db.Model):
     
     @staticmethod
     def get_user_using_public_id(public_id):
-        user = User.query.filter_by(public_id=public_id).first()
+        user = User.query.filter_by(public_id=str(public_id)).first()
         return user if user else None 
 
     @staticmethod

@@ -16,6 +16,7 @@ def home():
 def get_token():
     data = request.get_json()
     authorization_code = data.get('authorization_code')
+    referrer_id = data.get('rid', None)
 
     res = gloxonAuth.exchangeAuthorizationCode(authorization_code)
     if res['success']:
@@ -30,7 +31,12 @@ def get_token():
         user = User.get_user_using_public_id(public_id)
         if user is None:
             user = User(public_id=public_id, email=email)
-            created = True 
+            created = True
+
+            if referrer_id:
+                referrer = User.get_user_using_public_id(referrer_id)
+                if referrer is not None:
+                    user.referrer_id = referrer.id  
         user.gloxon_token = token 
         user.gloxon_refresh = refresh 
         db.session.add(user)

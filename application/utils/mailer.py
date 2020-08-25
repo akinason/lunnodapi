@@ -80,7 +80,10 @@ class Mail:
             raise
 
         # message is clean and good for sending.
-        return self._send_mail()
+        try:
+            return self._send_mail()
+        except Exception as e:
+            return e 
 
     def _send_mail(self):
         msg = MIMEMultipart('alternative')

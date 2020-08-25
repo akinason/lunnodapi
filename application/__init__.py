@@ -7,8 +7,8 @@ from flask_executor import Executor
 
 from application.utils.gearman import JSONGearmanClient, JSONGearmanWorker
 
-gm_client = JSONGearmanClient(config.Configurations.GEARMAN_CLIENT_HOST_LIST)
-gm_worker = JSONGearmanWorker(config.Configurations.GEARMAN_WORKER_HOST_LIST)
+gm_client = JSONGearmanClient(config.config.GEARMAN_CLIENT_HOST_LIST)
+gm_worker = JSONGearmanWorker(config.config.GEARMAN_WORKER_HOST_LIST)
 
 app = Flask(__name__)
 
@@ -29,3 +29,5 @@ from application.account.routes import *
 from application.smscenter.jobs import * 
 from application.smscenter.routes import *
 from application.smsprovider.routes import *
+from application.billing.routes import *
+from application.billing.jobs import *

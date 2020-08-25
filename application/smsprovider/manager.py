@@ -61,6 +61,13 @@ def _mark_provider_as_not_in_use(provider_id):
 
 
 def send_messages():
+    """
+    Reponsible for preparing messages to be sent through sms providers.
+
+    Groups the sms in chunks and uses multi threading to send them.
+    """
+    max_workers = config.EXECUTOR_MAX_WORKERS
+    
     msgs = ShortMessage.get_messages_by_status(sms_status.submitted)
 
     if msgs is None:
@@ -79,7 +86,7 @@ def send_messages():
 
     # mark providers as in use.
     provider_ids = [p.id for p in providers]
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers) as executor:
         executor.map(_mark_provider_as_in_use, provider_ids)
 
     provider_count = len(providers) # We re-calculate the size since it may have been sliced.
@@ -97,7 +104,6 @@ def send_messages():
 
     s = time.perf_counter()
 
-    max_workers = config.EXECUTOR_MAX_WORKERS
     with ThreadPoolExecutor(max_workers) as executor:
         executor.map(messenger, msg_list, prov_list)
    
