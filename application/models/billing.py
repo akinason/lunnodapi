@@ -28,7 +28,7 @@ class PaymentGateway(db.Model):
     website = db.Column(db.String(50), nullable=True)
     payment_url =  db.Column(db.String(250), nullable=True)
     callback_url = db.Column(db.String(250), nullable=True)
-    params = db.Column(JSON(), nullable=True)
+    params = db.Column(JSON(), nullable=True, default={})
     active = db.Column(db.Boolean(), default=False)
     created = db.Column(db.DateTime(), default=datetime.utcnow())
     updated = db.Column(db.DateTime(), onupdate=datetime.utcnow(), default=datetime.utcnow())
@@ -110,6 +110,7 @@ class BillingTransaction(db.Model):
     __tablename__ = 'billing_transactions'
 
     SMS_SALES = 'SMS_SALES'
+    AFFILIATE_COMMISSION = 'AFFILIATE_COMMISSION'
 
     id = db.Column(db.Integer(), primary_key=True)
     amount = db.Column(db.Numeric(10, 2), nullable=False)

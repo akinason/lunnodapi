@@ -1,4 +1,4 @@
-from flask import request, jsonify, g 
+from flask import request, jsonify, g, render_template
 
 from marshmallow import ValidationError
 
@@ -143,7 +143,7 @@ def update_paymentgateway():
     if pg is None: return jsonify({"success": False, "message": {"id": "Payment Gateway not found."}}), 404
 
     id = data.pop('id')
-    db.session.query(PaymentGateway.id == id).update(data)
+    db.session.query(PaymentGateway.id).filter(PaymentGateway.id == id).update(data)
     db.session.add(pg)
     db.session.commit()
 
@@ -263,9 +263,10 @@ def billing_transaction_update():
     if txn.is_complete:
         return jsonify({"success": False, "message": {"general": "Transaction already completed."}}), 400
     
-    txn.response_data = data.get('response_data')
-    txn.is_paid = data.get('is_paid')
-    txn.payment_gateway_id = data.get('payment_gateway_id')
+    db.session.query(BillingTransaction).filter(BillingTransaction.id == txn.id).update(**data)
+    # txn.response_data = data.get('response_data')
+    # txn.is_paid = data.get('is_paid')
+    # txn.payment_gateway_id = data.get('payment_gateway_id')
     db.session.commit()
   
     if txn.is_paid:
@@ -287,5 +288,9 @@ def payment_gateway_callback_handler(pg_name):
 
 @app.route("/billing/test", methods=["GET", "POST"])
 def billing_test():
- 
-    return jsonify({}), 200 
+    return render_template("checkout.html")
+    from application.billing.lib.paypal import paypal 
+    # paypal._getOrderDetails("2VG64936K0807662Y")
+    # paypal._getCapturedPaymentDetails("58V19987BL272640V")
+
+    # return jsonify({}), 200

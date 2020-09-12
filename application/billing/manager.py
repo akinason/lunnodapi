@@ -56,17 +56,21 @@ class Manager:
         if not self.pg.implements_verification:
             return {"success": False, "message": "%s does not implement verification." % self.pg.internal_name}
 
-        if txn is None or txn.is_complete == True or txn.is_successful:
+        if txn is None or txn.is_successful or (txn.is_complete == True and txn.is_successful):
             # End everything.
             return {"success": False, "message": "Transaction already completed."}
 
         response = self.pg.verify(transaction_id)
         if response["success"]:
             txn.is_successful = True
-
             txn.is_verified = True
             txn.verification_data = response.get('data')
             txn.external_reference = response.get("external_reference")
+            if not txn.payment_gateway_id:
+                txn.payment_gateway_id = self.pg.id 
+            
+            if not txn.is_paid:
+                txn.is_paid = True 
             db.session.add(txn)
             db.session.commit()
             res = self._complete_processing(txn)
@@ -84,19 +88,25 @@ class Manager:
             return {"success": False, "message": "%s does not implement callback." % self.pg.internal_name}
 
         response = self.pg.parse_callback(request_data)
-        reference = response.get('internal_reference')
-        txn = BillingTransaction.get_transaction_using_reference(reference)
 
-        if txn is None or txn.is_complete == True or txn.is_successful:
+        reference = response.get('internal_reference')
+        txn = BillingTransaction.get_transaction_using_id(reference)
+
+        if txn is None or txn.is_successful or (txn.is_complete and txn.is_successful):
             # End everything.
             return {"success": False, "message": "Invalid reference %s, or transaction already completed." % reference}
         
         if response["success"]:
             txn.is_successful = True
-
             txn.is_verified = True
             txn.callback_data = response.get('data')
             txn.external_reference = response.get("external_reference")
+
+            if not txn.payment_gateway_id:
+                txn.payment_gateway_id = self.pg.id 
+            
+            if not txn.is_paid:
+                txn.is_paid = True 
             db.session.add(txn)
             db.session.commit()
 

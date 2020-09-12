@@ -12,6 +12,7 @@ class PaymentGatewaySchema(ma.Schema):
     name = fields.String(required=True)
     payment_url = fields.String(required=True)
     active = fields.Boolean(default=False)
+    internal_name = fields.String(required=True)
 
     alt_name = fields.String(required=False)
     description = fields.String(required=False)
@@ -30,6 +31,7 @@ class PaymentGatewayUpdateSchema(ma.Schema):
     name = fields.String(required=False)
     payment_url = fields.String(required=False)
     active = fields.Boolean(default=False)
+    internal_name = fields.String(required=False)
 
     alt_name = fields.String(required=False)
     description = fields.String(required=False)

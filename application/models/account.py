@@ -63,7 +63,7 @@ class User(db.Model):
             self._full_name = f"{self._first_name} {self._last_name}"
 
     def get_user_information(self):
-        res = gloxonAuth.getUserInformation(self.gloxon_token, self.gloxon_id)
+        res = gloxonAuth.getUserInformation(self.gloxon_token, self.public_id)
         return res 
 
     @staticmethod
